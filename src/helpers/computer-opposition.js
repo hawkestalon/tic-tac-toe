@@ -1,4 +1,4 @@
-import { Possibles } from "./find-a-winner";
+// import { possibles } from "./find-a-winner";
 /**
  * Store state of possible winning combos
  * Loop through state and look to block if necessary
@@ -8,10 +8,20 @@ import { Possibles } from "./find-a-winner";
  */
 const X_MOVE = -1;
 const O_MOVE = -2;
-
+const POSSIBLES = [
+   [0, 1, 2],
+   [3, 4, 5],
+   [6, 7, 8],
+   [0, 3, 6],
+   [1, 4, 7],
+   [2, 5, 8],
+   [0, 4, 8],
+   [2, 4, 6],
+ ];
 export class ComputerOpposition {
    constructor(computerLetter){
-      this.possibles = Possibles;
+      this.possibles = JSON.parse(JSON.stringify(POSSIBLES));
+      console.log("Initializing.... ", this.possibles);
       if(computerLetter === 'O'){
          this.computer = O_MOVE;
          this.player = X_MOVE;
@@ -21,19 +31,15 @@ export class ComputerOpposition {
       }
    }
 
-   updatePossibles(prevMove, playerMove){
-       this.possibles.array.forEach(possible => {
-          possible.forEach(possibleMove=>{
-             if(possibleMove === prevMove){
-                possibleMove = playerMove;
-               }
-            });
+   updatePossibles(prevMove, isPlayer){
+      console.log(this.possibles)
+      this.possibles.forEach(possible => {
+         possible.forEach((possibleMove, index)=>{
+            if(possibleMove === prevMove){
+               possible[index] = isPlayer ? this.player : this.computer
+            }
          });
-   }
-      
-   getNextMove(prevMove){
-      this.updatePossibles(prevMove, this.player);
-      return this.nextMove();
+      });
    }
 
    nextMove(){
@@ -60,12 +66,14 @@ export class ComputerOpposition {
             blocks.push(moveObject);
          } else if (moveObject.playerMoves === 0){
             potentialWins.push(moveObject);
+         } else {
+            potentialWins.push(moveObject);
          }
       });
       if(blocks.length >= 1 && this.flipACoin()){
-         return blocks[this.getARandomIndex(blocks.length)];
-      } else {
-         return potentialWins[this.getARandomIndex(potentialWins.length)];
+         return blocks[this.getARandomIndex(blocks.length)].possibleMove;
+      } else if(potentialWins.length >= 1) {
+         return potentialWins[this.getARandomIndex(potentialWins.length)].possibleMove;
       }
    }
 
@@ -75,6 +83,12 @@ export class ComputerOpposition {
 
    flipACoin(){
       return Math.round(Math.random());
+   }
+
+   clear(){
+      console.log("Clearing State....")
+      this.possibles = JSON.parse(JSON.stringify(POSSIBLES));
+      console.log(this.possibles)
    }
 
 }

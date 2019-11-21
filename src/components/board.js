@@ -2,37 +2,55 @@ import React, { Component } from "react";
 import Square from "./square";
 import { calculateWinner } from "../helpers/find-a-winner";
 import "../index.css";
+import { ComputerOpposition } from '../helpers/computer-opposition';
 
 class Board extends Component {
-   state = {
-      squares: Array(9).fill(null),
-      isXTurn: true,
-      winner: null,
-      history: [Array(9).fill(null)],
-      oWins: 0,
-      xWins: 0,
+   constructor(props){
+      super(props);
+      this.state = {
+         squares: Array(9).fill(null),
+         isXTurn: true,
+         winner: null,
+         history: [Array(9).fill(null)],
+         oWins: 0,
+         xWins: 0,
+      }
+      this.computerOppostion = new ComputerOpposition('O')
    }
 
    handleClick(i){
       let squares = this.state.squares.slice();
-      squares[i] = this.getPlayer();
+      console.log("Player move is ", i)
+      squares[i] = 'X'
+      this.computerOppostion.updatePossibles(i, true)
+      squares = this.getComputerMove(squares);
       const winner = calculateWinner(squares);
-      if(winner){
-         const newState = {
-            oWins: this.state.oWins,
-            xWins: this.state.xWins,
-            winner
-         }
-         if(winner === 'X'){
-            newState.xWins++;
-         } else {
-            newState.oWins++;
-         }
-         this.setState(newState);
-         return;
-      }
+      if(winner) this.declareWinner(winner);
       const history = this.state.history.concat([squares])
       this.setState({squares, isXTurn: !this.state.isXTurn, winner, history});
+   }
+
+   declareWinner(winner){
+      const newState = {
+         oWins: this.state.oWins,
+         xWins: this.state.xWins,
+         winner
+      }
+      if(winner === 'X'){
+         newState.xWins++;
+      } else {
+         newState.oWins++;
+      }
+      this.setState(newState);
+      return;
+   }
+
+   getComputerMove(squares){
+      const nextMove = this.computerOppostion.nextMove();
+      console.log(nextMove, " is the next move");
+      squares[nextMove] = 'O'
+      this.computerOppostion.updatePossibles(nextMove, false);
+      return squares;
    }
 
    getPlayer = ()=>{
@@ -41,6 +59,7 @@ class Board extends Component {
 
    resetState = () =>{
       let squares = Array(9).fill(null);
+      this.computerOppostion.clear();
       this.setState({squares, isXTurn: true, winner: null, history: [squares]});
    }
 
@@ -76,7 +95,7 @@ class Board extends Component {
           <div className="status">X-wins: {this.state.xWins}</div>
           <div className="status">O-wins: {this.state.oWins}</div>
           <button onClick={this.resetState} className="start-over">Start Over</button>
-          <button onClick={this.undo} className="start-over">Undo</button>
+          {/* <button onClick={this.undo} className="start-over">Undo</button> */}
             <div className="board-row">
                {this.renderSquare(0)}{this.renderSquare(1)}{this.renderSquare(2)}
             </div>
