@@ -1,9 +1,7 @@
-// import { possibles } from "./find-a-winner";
 /**
  * Store state of possible winning combos
  * Loop through state and look to block if necessary
- * Loop through state and look for an empty combo || combo with only computer pieces. 
- * If no empty combos no possible winning moves exist.
+ * and look for an empty combo || combo with only computer pieces. 
  * Use -1 to represent x and -2 to represent o
  */
 const X_MOVE = -1;
@@ -20,8 +18,8 @@ const POSSIBLES = [
  ];
 export class ComputerOpposition {
    constructor(computerLetter){
-      this.possibles = JSON.parse(JSON.stringify(POSSIBLES));
-      console.log("Initializing.... ", this.possibles);
+      // We need to make a deep copy of POSSIBLES so we can reset when a new game starts.
+      this.possibles = JSON.parse(JSON.stringify(POSSIBLES)); 
       if(computerLetter === 'O'){
          this.computer = O_MOVE;
          this.player = X_MOVE;
@@ -32,7 +30,6 @@ export class ComputerOpposition {
    }
 
    updatePossibles(prevMove, isPlayer){
-      console.log(this.possibles)
       this.possibles.forEach(possible => {
          possible.forEach((possibleMove, index)=>{
             if(possibleMove === prevMove){
@@ -45,6 +42,7 @@ export class ComputerOpposition {
    nextMove(){
       let blocks = [];
       let potentialWins = [];
+      let lastOptions = [];
       this.possibles.forEach(possible => {
          let moveObject = {
             playerMoves: 0,
@@ -54,6 +52,7 @@ export class ComputerOpposition {
          possible.forEach(possibleMove =>{
             if(possibleMove >= 0) {
                moveObject.possibleMove = possibleMove;
+               lastOptions.push(possibleMove);
                return;
             }
             if(possibleMove === this.player){
@@ -62,11 +61,9 @@ export class ComputerOpposition {
                moveObject.computerMoves++;
             }
          })
-         if(moveObject.playerMoves === 2){
+         if(moveObject.playerMoves === 2 && moveObject.possibleMove !== null){
             blocks.push(moveObject);
-         } else if (moveObject.playerMoves === 0){
-            potentialWins.push(moveObject);
-         } else {
+         } else if (moveObject.playerMoves === 0 || moveObject.possibleMove !== null){
             potentialWins.push(moveObject);
          }
       });
@@ -74,6 +71,8 @@ export class ComputerOpposition {
          return blocks[this.getARandomIndex(blocks.length)].possibleMove;
       } else if(potentialWins.length >= 1) {
          return potentialWins[this.getARandomIndex(potentialWins.length)].possibleMove;
+      } else if (lastOptions.length >= 1) {
+         return lastOptions[0];
       }
    }
 
@@ -86,7 +85,6 @@ export class ComputerOpposition {
    }
 
    clear(){
-      console.log("Clearing State....")
       this.possibles = JSON.parse(JSON.stringify(POSSIBLES));
       console.log(this.possibles)
    }

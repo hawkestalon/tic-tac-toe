@@ -20,7 +20,6 @@ class Board extends Component {
 
    handleClick(i){
       let squares = this.state.squares.slice();
-      console.log("Player move is ", i)
       squares[i] = 'X'
       this.computerOppostion.updatePossibles(i, true)
       squares = this.getComputerMove(squares);
@@ -47,14 +46,9 @@ class Board extends Component {
 
    getComputerMove(squares){
       const nextMove = this.computerOppostion.nextMove();
-      console.log(nextMove, " is the next move");
       squares[nextMove] = 'O'
       this.computerOppostion.updatePossibles(nextMove, false);
       return squares;
-   }
-
-   getPlayer = ()=>{
-      return this.state.isXTurn ? 'X' : 'O'
    }
 
    resetState = () =>{
@@ -62,7 +56,13 @@ class Board extends Component {
       this.computerOppostion.clear();
       this.setState({squares, isXTurn: true, winner: null, history: [squares]});
    }
-
+   
+   undo = () => {
+      if(this.state.history.length === 1) return;
+      const modifiedHistory = this.state.history.slice(0, this.state.history.length - 1);
+      this.setState({squares: modifiedHistory[modifiedHistory.length - 1], isXTurn: !this.state.isXTurn, history: modifiedHistory})
+   }
+   
    renderSquare(i) {
       return (
         <Square
@@ -72,14 +72,8 @@ class Board extends Component {
       );
     }
 
-   undo = () => {
-      if(this.state.history.length === 1) return;
-      const modifiedHistory = this.state.history.slice(0, this.state.history.length - 1);
-      this.setState({squares: modifiedHistory[modifiedHistory.length - 1], isXTurn: !this.state.isXTurn, history: modifiedHistory})
-    }
   
    render() {
-      const status = `Next Player ${this.getPlayer()}`;
       if(this.state.winner){
          return(
             <div>
@@ -91,11 +85,11 @@ class Board extends Component {
   
       return (
         <div>
-          <div className="status">{status}</div>
-          <div className="status">X-wins: {this.state.xWins}</div>
-          <div className="status">O-wins: {this.state.oWins}</div>
+          <div className="status">Player-wins: {this.state.xWins}</div>
+          <div className="status">Computer-wins: {this.state.oWins}</div>
           <button onClick={this.resetState} className="start-over">Start Over</button>
-          {/* <button onClick={this.undo} className="start-over">Undo</button> */}
+          { /* The undo button is difficult because state is stored differently in the AI class */}
+          {/* <button onxClick={this.undo} className="start-over">Undo</button> */}
             <div className="board-row">
                {this.renderSquare(0)}{this.renderSquare(1)}{this.renderSquare(2)}
             </div>
